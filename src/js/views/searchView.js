@@ -6,13 +6,13 @@ export const getInput = () => elements.searchInput.value;
 
 export const clearInput = () => {
   elements.searchInput.value = "";  //curly braces so we dont have implicit return
-}
+};
 
 //clear all results by setting inner HTML to nothing
 export const clearResults = () => {
   elements.searchResList.innerHTML = "";
   elements.searchResPages.innerHTML = "";
-}
+};
 
 export const renderResults = (recipes, page = 1, resPerPage = 10) => {
   //render results of current page
@@ -54,7 +54,7 @@ const renderRecipe = recipe => {
 const renderButtons = (page, numResults, resPerPage) => {
   const pages = Math.ceil(numResults / resPerPage); //how many pages total
   let button;
-  if (page ===1 && pages > 1) {
+  if (page === 1 && pages > 1) {
     // Button to go next page
     button = createButton(page, "next");
   } else if (page < pages) {
@@ -72,7 +72,8 @@ const renderButtons = (page, numResults, resPerPage) => {
 
 //type: "prev" or "next"
 //data-goto for event handler later on
-const createButton = (page, type) => `
+const createButton = (page, type) => 
+`
   <button class="btn-inline results__btn--${type}" data-goto=${type === "prev" ? page - 1 : page + 1}>
     <svg class="search__icon">
       <use href="img/icons.svg#icon-triangle-${type === "prev" ? "left" : "right"}"></use>
