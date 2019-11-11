@@ -1,23 +1,18 @@
 export const elements = {
-         searchForm: document.querySelector(".search"),
-         searchInput: document.querySelector(".search__field"),
-         searchResList: document.querySelector(".results__list"),
-         searchRes: document.querySelector(".results"),
-         searchResPages: document.querySelector(".results__pages"),
-       };
-
-//to have the loader class from clearLoader() in a changeable String
-export const elementStrings = {
-  loader: "loader",
+  searchForm: document.querySelector(".search"),
+  searchInput: document.querySelector(".search__field"),
+  searchResList: document.querySelector(".results__list"),
+  searchRes: document.querySelector(".results"),
+  searchResPages: document.querySelector(".results__pages")
 };
 
 //loading spinner while awaiting
 //parent so we can define where it spins; class loader from style.css
 export const renderLoader = parent => {
   const loader = `
-    <div class="${elementStrings.loader}">
+    <div class="loader">
       <svg>
-        <use href="img/icons.svg#icon-cw"></use>
+        <use href="img/icons.svg#icon-cw></use>
       </svg>
     </div>
   `;
@@ -25,6 +20,6 @@ export const renderLoader = parent => {
 };
 
 export const clearLoader = () => {
-  const loader = document.querySelector(`.${elementStrings.loader}`);
+  const loader = document.querySelector(".loader");
   if (loader) loader.parentElement.removeChild(loader);
-}
+};

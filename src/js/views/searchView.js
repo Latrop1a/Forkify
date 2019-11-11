@@ -1,123 +1,89 @@
 //dom strings import
 import { elements } from "./base";
 
-//getting input from search field
 export const getInput = () => elements.searchInput.value;
 
-export const clearInput = () => {
-  elements.searchInput.value = "";  //curly braces so we dont have implicit return
+export const clearInput = () => (elements.searchInput.value = "");
+
+export const clearResults = () => (elements.searchResList.innerHTML = "");
+
+const limitRecipeTitle = (title, limit = 17) => {
+  let wordsArr,
+    newTitle = "";
+  if (title.length > limit) {
+    //Split into words
+    wordsArr = title.split(" ");
+    //
+    wordsArr.reduce((acc, cur) => {
+      if (cur.length + acc < limit) {
+        newTitle = `${newTitle} ${cur}`;
+      }
+      return cur.length + acc;
+    }, 0);
+    title = `${newTitle} ...`;
+  }
+  return title;
 };
 
-//clear all results by setting inner HTML to nothing
-export const clearResults = () => {
-  elements.searchResList.innerHTML = "";
-  elements.searchResPages.innerHTML = "";
-};
-
-export const renderResults = (recipes, page = 1, resPerPage = 10) => {
-  //render results of current page
-  const start = (page-1) * resPerPage;
-  const end = page * resPerPage;
-  //loops through 30 results from array and calls renderRecipe
-  //slice returns new array with start to end not included
-  recipes.slice(start, end).forEach(renderRecipe);
-
-  //render pagination buttons
-  renderButtons(page, recipes.length, 10);
-};
-
+// puts one result onto UI
 const renderRecipe = recipe => {
-  //recipe html template string
-  const titleShortened = limitRecipeTitle(recipe.title);
-  const markup = `
-    <li>
-      <a class="results__link" href="#${recipe.recipe_id}">
-        <figure class="results__fig">
-          <img src="${recipe.image_url}" alt="${recipe.title}">
-        </figure>
-        <div class="results__data">
-          <h4 class="results__name">${titleShortened}</h4>
-          <p class="results__author">${recipe.publisher}</p>
-        </div>
-      </a>
-    </li>
-  `;
-  //insert the markup here, one after the other, at the end of the inside tag
+  const formatTitle = limitRecipeTitle(recipe.title);
+  const markup = `<li>
+                    <a class="results__link" href="#${recipe.recipe_id}">
+                      <figure class="results__fig">
+                        <img src=${recipe.image_url} alt="${formatTitle}">
+                      </figure>
+                      <div class="results__data">
+                        <h4 class="results__name">${formatTitle}</h4>
+                        <p class="results__author">${recipe.publisher}</p>
+                      </div>
+                    </a>
+                </li>`;
+  // insert element after the others
   elements.searchResList.insertAdjacentHTML("beforeend", markup);
 };
 
-/*
-    -- PAGEINATION
-*/
+/**
+ * Returns HTML string for button rendering
+ * @param {*} type - "prev" or "next" 
+ */
+const createButton = (page, type) => `
+  <button class="btn-inline results__btn--${type}" data-goto=${type === "prev" ? page-1 : page+1}>
+    <svg class="search__icon">
+      <use href="img/icons.svg#icon-triangle-${type === "prev" ? "left" : "right"}"></use>
+    </svg>
+    <span>Page ${type === "prev" ? page-1 : page+1}</span>
+  </button>
+`;
 
-//rendering page button on page, and we need to know how many pages total
 const renderButtons = (page, numResults, resPerPage) => {
-  const pages = Math.ceil(numResults / resPerPage); //how many pages total
+  const pages = Math.ceil(numResults / resPerPage);
+
   let button;
-  if (page === 1 && pages > 1) {
-    // Button to go next page
+  if (page === 1) {
+    // Button to go next only
     button = createButton(page, "next");
-  } else if (page < pages) {
-    // Buttons to go back and forth
-    button = `${createButton(page, "next")}
-              ${createButton(page, "prev")}
-              `;
   } else if (page === pages && pages > 1) {
-    //Button to go back
+    // Button to go prev only
     button = createButton(page, "prev");
+  } else {
+    //both buttons
+    button = `
+      ${createButton(page, "prev")};
+      ${createButton(page, "next")};
+    `;
   }
 
   elements.searchResPages.insertAdjacentHTML("afterbegin", button);
 };
 
-//type: "prev" or "next"
-//data-goto for event handler later on
-const createButton = (page, type) => 
-`
-  <button class="btn-inline results__btn--${type}" data-goto=${type === "prev" ? page - 1 : page + 1}>
-    <svg class="search__icon">
-      <use href="img/icons.svg#icon-triangle-${type === "prev" ? "left" : "right"}"></use>
-    </svg>
-    <span>Page ${type === "prev" ? page - 1 : page + 1}</span>
-  </button>
-`;
+// renders results
+export const renderResults = (recipes, page = 1, resPerPage = 10) => {
+  const start = resPerPage * (page-1);
+  const end = resPerPage * page; //not -1 because slice does not include end element
 
-
-
-
-
-
-/** MY TRY Beforehand. Basically the same*/
-// //breaks down title so its one line and dots
-// const limitRecipeTitle = (title, limit = 17) => {
-//   if (title.length > limit) {
-//     let newTitle = "";
-//     title.split(" ").forEach(el => {
-//       if ((newTitle.length+el.length+1) < limit) {
-//         newTitle = newTitle + " " + el;
-//       }
-//     });
-//     return newTitle + " ...";
-//   }
-//   return title;
-// };
-
-//breaks down title so its one line and dots
-const limitRecipeTitle = (title, limit = 17) => {
-  //adding stuff to an array is not mutating
-  const newTitle = [];
-  if (title.length > limit) {
-    title.split(" ").reduce((acc, cur) => {
-      if (acc + cur.length <= limit) {
-        newTitle.push(cur);
-      }
-      //we return the new acc for the next callback function call
-      return acc + cur.length;
-    }, 0);
-    //return string with all the words joined together with spaces in between and 3 dots at end to show its longer
-    return `${newTitle.join(" ")} ...`;
-  }
-  return title;
+  //slice gets the right portion of the array
+  //forEach renders all elements one by one. cur ele gets passed into automatically
+  recipes.slice(start, end).forEach(renderRecipe);
+  renderButtons(page, recipes.length, resPerPage);
 };
-
-
